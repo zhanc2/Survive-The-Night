@@ -97,7 +97,7 @@ class StartEnd:
                         self.difficulty = 2
                     elif 460 < mouse[0] < 550:
                         self.difficulty = 3
-                elif 572 < mouse[1] < 622:
+                elif 472 < mouse[1] < 522:
                     if 250 < mouse[0] < 392:
                         self.mode = 1
                     if 408 < mouse[0] < 550:
@@ -107,7 +107,7 @@ class StartEnd:
         for cloud in self.clouds:
             cloud.display(self.screen)
             cloud.move()
-            if pygame.time.get_ticks() - self.start_time > 5300:
+            if pygame.time.get_ticks() - self.start_time > 5500:
                 cloud.start_time_end = True
 
     def quit_from_start_menu(self, events):

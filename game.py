@@ -14,7 +14,11 @@ pygame.font.init()
 
 
 class Game:
-    def __init__(self, screen: pygame.display, difficulty: int, mode: int):
+    def __init__(self, screen: pygame.display, difficulty: int, mode: int, player_sprite: pygame.surface,
+                 zombie_sprite_one: pygame.surface, zombie_sprite_two: pygame.surface,
+                 zombie_sprite_three: pygame.surface, rocket_sprite: pygame.surface, explosion_sprite: pygame.surface):
+        self.sprites = (player_sprite, rocket_sprite, explosion_sprite)
+
         self.font = pygame.font.SysFont('Mistral', 22)
         self.bigger_font = pygame.font.SysFont('Mistral', 50)
 
@@ -27,7 +31,7 @@ class Game:
         self.screen = screen
         self.clock = pygame.time.Clock()
 
-        self.playerOne = Player()
+        self.playerOne = Player(self.sprites[0])
         self.player_flash_time = 0
         self.hit_time = 0
         self.health_str = self.font.render("Health: ", False, (0, 0, 0))
@@ -70,6 +74,8 @@ class Game:
         self.time_since_last_spawn = 0
         self.zombie_to_be_spawned = 0
         self.zombie_spawn_delay = 750
+        self.zombie_data = [["regular", "tank", "small"], [100, 200, 75], [0.75, 0.4, 0.9], [10, 20, 15],
+                            [zombie_sprite_one, zombie_sprite_two, zombie_sprite_three], [10, 20, 15]]
 
         self.round_going = False
         self.round_start_time = 0
@@ -102,11 +108,11 @@ class Game:
         self.backgroundColour = (self.color, self.color, self.color)
         pygame.draw.rect(self.screen, (0, 0, 0), pygame.Rect(0 - self.camera.x_pos, 0 - self.camera.y_pos, 1000, 1000),
                          3)
-        # for i in range(5):
-        #     pygame.draw.line(self.screen, (0, 0, 0), ((i*200) - self.camera.x_pos, 0 - self.camera.y_pos),
-        #                      ((i*200) - self.camera.x_pos, 1000 - self.camera.y_pos))
-        #     pygame.draw.line(self.screen, (0, 0, 0), (0 - self.camera.x_pos, (i*200) - self.camera.y_pos),
-        #                      (1000 - self.camera.x_pos, (i*200) - self.camera.y_pos))
+        for i in range(5):
+            pygame.draw.line(self.screen, (0, 0, 0), ((i*200) - self.camera.x_pos, 0 - self.camera.y_pos),
+                             ((i*200) - self.camera.x_pos, 1000 - self.camera.y_pos))
+            pygame.draw.line(self.screen, (0, 0, 0), (0 - self.camera.x_pos, (i*200) - self.camera.y_pos),
+                             (1000 - self.camera.x_pos, (i*200) - self.camera.y_pos))
 
     def update_camera(self):
         self.camera.update(self.playerOne.x_pos-400, self.playerOne.y_pos-300)
@@ -333,7 +339,7 @@ class Game:
                                                           + random_offset)
                     bullet = Bullet(self.playerOne.rect.center[0], self.playerOne.rect.center[1],
                                     x_and_y[0], x_and_y[1],
-                                    self.playerOne.bullet_dmg[self.playerOne.selected_gun], time, life)
+                                    self.playerOne.bullet_dmg[self.playerOne.selected_gun], time, life, 0)
                     self.bullets.append(bullet)
                     self.playerOne.take_recoil(x_and_y)
                     self.time_since_last_shot = pygame.time.get_ticks()
@@ -345,7 +351,7 @@ class Game:
                         x_and_y = self.get_x_and_y_from_angle(angle)
                         bullet = Bullet(self.playerOne.rect.center[0], self.playerOne.rect.center[1],
                                         x_and_y[0], x_and_y[1],
-                                        self.playerOne.bullet_dmg[self.playerOne.selected_gun], time, 500)
+                                        self.playerOne.bullet_dmg[self.playerOne.selected_gun], time, 500, 0)
                         self.bullets.append(bullet)
                         self.playerOne.take_recoil(x_and_y)
                     self.time_since_last_shot = pygame.time.get_ticks()
@@ -355,7 +361,7 @@ class Game:
                     x_and_y = self.get_x_and_y_value(mouse_pos[0], mouse_pos[1], 400, 300, True)
                     bullet = Bullet(self.playerOne.rect.center[0], self.playerOne.rect.center[1],
                                     x_and_y[0], x_and_y[1],
-                                    self.playerOne.bullet_dmg[self.playerOne.selected_gun], time, 5000)
+                                    self.playerOne.bullet_dmg[self.playerOne.selected_gun], time, 5000, 0)
                     self.bullets.append(bullet)
                     self.playerOne.take_recoil(x_and_y)
                     self.time_since_last_shot = pygame.time.get_ticks()
@@ -365,7 +371,7 @@ class Game:
                     angle = self.get_angle(mouse_pos[0], mouse_pos[1], 400, 300)
                     x_and_y = self.get_x_and_y_from_angle(angle)
                     bullet = Rocket(self.playerOne.rect.center[0], self.playerOne.rect.center[1], x_and_y[0],
-                                    x_and_y[1], angle, time, 5000)
+                                    x_and_y[1], angle, time, 5000, 0, self.sprites[4])
                     self.bullets.append(bullet)
                     for i in range(5):
                         self.playerOne.take_recoil(x_and_y)
@@ -385,14 +391,14 @@ class Game:
                     if bullet in self.bullet_sectors[sector]:
                         self.bullet_sectors[sector].remove(bullet)
             bullet.get_hitbox()
-            if bullet.hitbox[0] > 1000 or bullet.hitbox[0] < -30:
+            if bullet.hitbox[0] > 1000 or bullet.hitbox[0] < 0:
                 if bullet in self.bullets:
                     self.bullets.remove(bullet)
                 for bullet_sector in bullet.sectors:
                     if bullet in self.bullet_sectors[bullet_sector - 1]:
                         self.bullet_sectors[bullet_sector - 1].remove(bullet)
                 return
-            elif bullet.hitbox[1] > 1000 or bullet.hitbox[1] < -30:
+            elif bullet.hitbox[1] > 1000 or bullet.hitbox[1] < 0:
                 if bullet in self.bullets:
                     self.bullets.remove(bullet)
                 for bullet_sector in bullet.sectors:
@@ -434,7 +440,9 @@ class Game:
                         self.zombie_spawn_x_y = (random.randint(0, 1000), 1000)
                     else:
                         self.zombie_spawn_x_y = (1000, random.randint(0, 1000))
-                    zombie = Zombie(i, self.zombie_spawn_x_y, self.difficulty)
+                    zombie = Zombie(self.zombie_spawn_x_y, self.difficulty, self.zombie_data[0][i],
+                                    self.zombie_data[1][i], self.zombie_data[2][i], self.zombie_data[3][i],
+                                    self.zombie_data[4][i], self.zombie_data[5][i])
                     self.round_zombies.append(zombie)
 
         if self.round_going:
@@ -460,24 +468,23 @@ class Game:
                 zombie.sectors = self.get_sector(zombie.hitbox[0], zombie.hitbox[1], zombie.size, zombie.size)
                 for sector in zombie.sectors:
                     for bullet in self.bullet_sectors[sector-1]:
-                        if self.check_rect_collisions(zombie.hitbox, bullet.hitbox):
-                            zombie.trigger_hit(bullet.dmg)
-                            bullet_comparison = bullet
-                            sectors_removed_from = bullet.sectors
-                            if bullet in self.bullets:
-                                self.bullets.remove(bullet)
-                            for bullet_sector in sectors_removed_from:
-                                if bullet_comparison in self.bullet_sectors[bullet_sector-1]:
-                                    self.bullet_sectors[bullet_sector-1].remove(bullet_comparison)
-                            self.hit_time = pygame.time.get_ticks()
-                            zombie.flash_value = 150
-                            if bullet.rocket:
-                                explosion = Explosion(bullet.hitbox.center[0], bullet.hitbox.center[1],
-                                                      pygame.time.get_ticks())
-                                self.explosions.append(explosion)
-                            break
-                    # for wall in self.wall_sectors[sector-1]:
-                    #     return
+                        if bullet.player_or_zombie == 0:
+                            if self.check_rect_collisions(zombie.hitbox, bullet.hitbox):
+                                zombie.trigger_hit(bullet.dmg)
+                                bullet_comparison = bullet
+                                sectors_removed_from = bullet.sectors
+                                if bullet in self.bullets:
+                                    self.bullets.remove(bullet)
+                                for bullet_sector in sectors_removed_from:
+                                    if bullet_comparison in self.bullet_sectors[bullet_sector-1]:
+                                        self.bullet_sectors[bullet_sector-1].remove(bullet_comparison)
+                                self.hit_time = pygame.time.get_ticks()
+                                zombie.flash_value = 150
+                                if bullet.rocket:
+                                    explosion = Explosion(bullet.hitbox.center[0], bullet.hitbox.center[1],
+                                                          pygame.time.get_ticks())
+                                    self.explosions.append(explosion)
+                                break
                 for explosion in self.explosions:
                     if self.check_rect_collisions(zombie.hitbox, explosion.explosion_hitbox):
                         zombie.trigger_hit(1)
@@ -523,7 +530,7 @@ class Game:
         self.screen.blit(self.round_display, (720, 10))
 
     def check_game_paused(self, mouse: tuple, events: list):
-        pygame.draw.rect(self.screen, self.backgroundColour, pygame.Rect(200, 110, 400, 150))
+        pygame.draw.rect(self.screen, self.backgroundColour, pygame.Rect(200, 110, 420, 150))
         self.screen.blit(self.paused_str_1, (280, 120))
         self.screen.blit(self.paused_str_2, (223, 200))
         pygame.mouse.set_visible(True)
@@ -537,7 +544,7 @@ class Game:
                 self.paused = False
                 return 0
             if event.type == pygame.MOUSEBUTTONUP:
-                if 250 < mouse[0] < 550 and 470 < mouse[1] < 570:
+                if 250 < mouse[0] < 550 and 340 < mouse[1] < 440:
                     self.won_or_lose = 0
                     self.paused = False
                     return 1

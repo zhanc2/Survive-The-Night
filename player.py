@@ -3,14 +3,14 @@ import math
 
 
 class Player:
-    def __init__(self):
+    def __init__(self, sprite: pygame.surface):
         self.x_pos = 400
         self.y_pos = 300
         self.x_vel = 0
         self.y_vel = 0
         self.size = 35
         self.color = (0, 0, 255)
-        self.sprite = pygame.image.load("sprites/player/player.png")
+        self.sprite = sprite
         self.rotatedSprite = self.sprite
         self.hitbox = (self.x_pos, self.y_pos, self.size, self.size)
         self.rect = self.sprite.get_rect()

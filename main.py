@@ -1,10 +1,15 @@
 import pygame
 from game import Game
 from start_end import StartEnd
+from img_loader import ImgLoad
+
 
 pygame.init()
 pygame.font.init()
 screen = pygame.display.set_mode((800, 700))
+
+load_Img = ImgLoad()
+sprites = load_Img.load(screen)
 
 first_layer = True
 while first_layer:
@@ -26,7 +31,8 @@ while first_layer:
 
         while not_quit:
             start_end.restart = False
-            game = Game(screen, start_end.difficulty, start_end.mode)
+            game = Game(screen, start_end.difficulty, start_end.mode, sprites[0], sprites[1], sprites[2], sprites[3],
+                        sprites[4], sprites[5])
 
             while game.running:
                 mouse = pygame.mouse.get_pos()

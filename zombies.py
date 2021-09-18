@@ -13,18 +13,23 @@ sprites = [zombie_regular, zombie_tank, zombie_small]
 
 
 class Zombie:
-    def __init__(self, type_int, x_and_y: tuple, difficulty_multiply: float):
+    def __init__(self, x_and_y: tuple, difficulty_multiply: float, type: str, health: int, speed: float,
+                 dmg: int, sprite: pygame.surface, money_drop: int):
         self.x_pos = x_and_y[0]
         self.y_pos = x_and_y[1]
+
+        self.x_vel = 0
+        self.y_vel = 0
+
         self.sectors = []
 
         self.difficulty_multiplier = difficulty_multiply
 
-        self.type = zombie_type[type_int]
-        self.health = health[type_int] * self.difficulty_multiplier
-        self.speed = speed[type_int] * self.difficulty_multiplier
-        self.dmg = dmg[type_int] * self.difficulty_multiplier
-        self.sprite = sprites[type_int]
+        self.type = type
+        self.health = health * self.difficulty_multiplier
+        self.speed = speed * self.difficulty_multiplier
+        self.dmg = dmg * self.difficulty_multiplier
+        self.sprite = sprite
         self.rect = self.sprite.get_rect()
         self.rotated_sprite = self.sprite
         self.flash_value = 0
@@ -35,8 +40,7 @@ class Zombie:
 
         self.hitbox = (self.x_pos, self.y_pos, self.size, self.size)
 
-        self.money = [10, 20, 15]
-        self.money_drop = self.money[type_int]
+        self.money_drop = money_drop
         if self.difficulty_multiplier > 1:
             self.money_drop += 5
 
@@ -50,8 +54,11 @@ class Zombie:
         screen.blit(self.rotated_sprite, (self.rect.topleft[0]-cam_x, self.rect.topleft[1]-cam_y))
 
     def move(self, x_and_y_vel, dt):
-        self.x_pos += x_and_y_vel[0] * dt/15 * self.speed
-        self.y_pos += x_and_y_vel[1] * dt/15 * self.speed
+        self.x_vel = x_and_y_vel[0]
+        self.y_vel = x_and_y_vel[1]
+
+        self.x_pos += self.x_vel * dt/15 * self.speed
+        self.y_pos += self.y_vel * dt/15 * self.speed
 
     def get_hitbox(self, angle):
         x_y = pygame.math.Vector2((self.sprite_size-self.size)/2 * math.sin(math.radians(angle)),

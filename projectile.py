@@ -1,11 +1,10 @@
 import pygame
 import math
 
-rocket = pygame.image.load("sprites/player/rocket.png")
-
 
 class Projectile:
-    def __init__(self, x, y, x_vel, y_vel, bullet_dmg: int, start_time: int, life: int):
+    def __init__(self, x, y, x_vel, y_vel, bullet_dmg: int, start_time: int, life: int, player_or_zombie: int):
+        self.player_or_zombie = player_or_zombie
         self.x_pos = x
         self.y_pos = y
         self.x_vel = x_vel
@@ -21,8 +20,8 @@ class Projectile:
 
 
 class Bullet(Projectile):
-    def __init__(self, x, y, x_vel, y_vel, bullet_dmg: int, start_time: int, life: int):
-        super().__init__(x, y, x_vel, y_vel, bullet_dmg, start_time, life)
+    def __init__(self, x, y, x_vel, y_vel, bullet_dmg: int, start_time: int, life: int, player_or_zombie: int):
+        super().__init__(x, y, x_vel, y_vel, bullet_dmg, start_time, life, player_or_zombie)
         self.rocket = False
         self.size = 7
         self.hitbox = (self.x_pos, self.y_pos, self.size, self.size)
@@ -39,8 +38,8 @@ class Bullet(Projectile):
 
 
 class Rocket(Projectile):
-    def __init__(self, x, y, x_vel, y_vel, angle, start_time, life):
-        super().__init__(x, y, x_vel, y_vel, 50, start_time, life)
+    def __init__(self, x, y, x_vel, y_vel, angle, start_time, life, player_or_zombie: int, rocket: pygame.surface):
+        super().__init__(x, y, x_vel, y_vel, 50, start_time, life, player_or_zombie)
         self.sprite = rocket
         self.angle = angle
         self.rotated_sprite = pygame.transform.rotate(self.sprite, angle)
